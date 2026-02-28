@@ -23,14 +23,14 @@ I. Start
 II. Load `parcels.json`
 III. Convert each record into Parcel objects
 IV. If no parcels exist
-        - Display error message
-        - Stop program
+- Display error message
+- Stop program
 V. Initialize analysis
 VI. Compute:
-        - Total area of all active parcels
-        - Parcels exceeded the 300 sqm area
-        - Number of parcels for each `zone`
-        - Parcels intersected a proposed development boundary
+- Total area of all active parcels
+- Parcels exceeded the 300 sqm area
+- Number of parcels for each `zone`
+- Parcels intersected a proposed development boundary
 VII. Assemble summary `dict` and save as `summary.json`
 VII. End
 
