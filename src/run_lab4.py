@@ -6,7 +6,6 @@ from collections.abc import Iterable
 from src.spatial import Parcel
 from src import analysis
 
-
 DEFAULT_THRESHOLD = 300.0
 DEFAULT_ZONE = "Residential"
 
@@ -14,15 +13,12 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "data" / "parcels_shapely_ready.json"
 OUTPUT_PATH = ROOT / "output" / "summary.json"
 
-
 def _to_geometry(g):
-    """Convert JSON geometry (GeoJSON dict or WKT str) to a Shapely geometry if possible."""
     try:
         from shapely.geometry import shape
         from shapely import wkt
     except Exception:
         return g
-
     if isinstance(g, dict):
         return shape(g)
     if isinstance(g, str):
@@ -32,42 +28,37 @@ def _to_geometry(g):
             pass
     return g
 
-
 def load_parcels(json_path: Path) -> List[Parcel]:
     with open(json_path, "r", encoding="utf-8") as f:
         raw = json.load(f)
-
     parcels: List[Parcel] = []
     for rec in raw:
         parcels.append(
             Parcel(
                 parcel_id=rec["parcel_id"],
                 zone=rec.get("zone"),
-                area_sqm=float(rec.get("area_sqm", 0.0)),
                 is_active=bool(rec.get("is_active", True)),
+                area_sqm=float(rec.get("area_sqm", 0.0)),
                 geometry=_to_geometry(rec.get("geometry")),
             )
         )
     return parcels
 
-
 ZonesLike = Union[str, Iterable[str]]
 
-
-def build_summary(parcels: List[Parcel], threshold: float, desired_zone) -> Dict:
+def build_summary(parcels: List[Parcel], threshold: float, desired_zone: ZonesLike) -> Dict:
     total = analysis.total_active_area(parcels)
     big = analysis.parcels_above_threshold(parcels, threshold)
-
     counts = analysis.count_by_zone(parcels)
     if not isinstance(counts, dict):
         counts = dict(counts)
-
     suitable = analysis.intersecting_parcels(parcels, desired_zone)
+    zones = [desired_zone] if isinstance(desired_zone, str) else list(desired_zone)
 
     summary = {
         "inputs": {
             "threshold": threshold,
-            "desired_zone": desired_zone if isinstance(desired_zone, str) else list(desired_zone),
+            "desired_zone": zones,
             "parcel_count": len(parcels),
         },
         "results": {
@@ -80,8 +71,7 @@ def build_summary(parcels: List[Parcel], threshold: float, desired_zone) -> Dict
     }
     return summary
 
-
-def main(threshold: float = DEFAULT_THRESHOLD, desired_zone=DEFAULT_ZONE):
+def main(threshold: float = DEFAULT_THRESHOLD, desired_zone: ZonesLike = DEFAULT_ZONE):
     parcels = load_parcels(DATA_PATH)
 
     if not parcels:
@@ -99,15 +89,14 @@ def main(threshold: float = DEFAULT_THRESHOLD, desired_zone=DEFAULT_ZONE):
     print(f"- Total active area: {summary['results']['total_active_area']:.4f}")
     print(f"- Large parcels (> {threshold}): {summary['results']['large_parcels_count']}")
     print(f"- Zone counts: {summary['results']['zone_counts']}")
-    print(f"- Suitable ({desired_zone}): {len(summary['results']['suitable_parcel_ids'])}")
+    dz = ', '.join(summary['inputs']['desired_zone'])
+    print(f"- Suitable ({dz}): {len(summary['results']['suitable_parcel_ids'])}")
     print(f"Saved: {OUTPUT_PATH}")
-
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        # This ensures we see the REAL error message + line number if anything else is off.
         import traceback
         traceback.print_exc()
         print("ERROR TYPE:", type(e).__name__)

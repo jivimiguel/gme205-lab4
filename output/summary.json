@@ -1,7 +1,9 @@
 {
     "inputs": {
         "threshold": 300.0,
-        "desired_zone": "Residential",
+        "desired_zone": [
+            "Residential"
+        ],
         "parcel_count": 100
     },
     "results": {
