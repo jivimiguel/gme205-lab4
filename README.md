@@ -28,6 +28,7 @@ VI. Compute:
         - Parcels exceeded the 300 sqm area
         - Number of parcels for each `zone`
         - Parcels intersected a proposed development boundary
+VII. Assemble summary `dict` and save as `summary.json`
 VII. End
 
 ### Pseudocode
@@ -42,6 +43,9 @@ BEGIN
     STOP
     END IF
 
+    SET threshold = 300.0
+    SET desired_zone = "Residential"
+    
     SET `total_active_area` = total_active_area(parcel_list)`
     SET `large_parcels` = parcels_above_threshold(parcel_list, threshold)
     SET `zone_counts` = count_by_zone(parcel_list)
